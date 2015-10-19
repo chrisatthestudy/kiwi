@@ -7,13 +7,14 @@ Kiwi takes a folder of text files and exports them in another folder as
 web-pages.
 
 Usage:
-  kiwi [-s source] [-t target]
+  kiwi [SOURCE] [-t target]
   kiwi --version
+Arguments:
+  SOURCE                     source folder
 Options:
-  -h --help            show this help message and exit
-  --version            show version and exit
-  -s SOURCE --source=SOURCE  folder of source text files
-  -t TARGET --target=TARGET  folder to write html pages to
+  -h --help                  show this help message and exit
+  --version                  show version and exit
+  -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
 """
 
 # Standard library imports
@@ -65,8 +66,8 @@ class Kiwi():
         return True
 
     def prepare_source_path(self):
-        if self.params["--source"]:
-            self.source_path = self.params["--source"]
+        if self.params["SOURCE"]:
+            self.source_path = self.params["SOURCE"]
         else:
             self.source_path = os.getcwd()
         self.title = os.path.split(self.source_path)[1].title()
@@ -129,7 +130,8 @@ class Kiwi():
         f.close()
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.1')
+    params = docopt(__doc__, version='Kiwi, version 0.0.2')
+    print params
     
     api = Kiwi()
     api.execute(params)
