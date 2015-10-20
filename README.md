@@ -15,7 +15,7 @@ The target folder will be created if it does not already exist.
 
 ## Command-Line Parameters
 
-* kiwi [source_folder] [-t target_folder]
+* kiwi [source_folder] [-t target_folder] [-v|--verbose]
 
 ## Dependencies
 

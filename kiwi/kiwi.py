@@ -7,7 +7,7 @@ Kiwi takes a folder of text files and exports them in another folder as
 web-pages.
 
 Usage:
-  kiwi [SOURCE] [-t target]
+  kiwi [SOURCE] [-t target] [-v]
   kiwi --version
 Arguments:
   SOURCE                     source folder
@@ -15,6 +15,7 @@ Options:
   -h --help                  show this help message and exit
   --version                  show version and exit
   -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
+  -v --verbose               displays processing details
 """
 
 # Standard library imports
@@ -59,6 +60,7 @@ class Kiwi():
         
     def execute(self, params):
         self.params = params
+        self.verbose = params["--verbose"]
         self.template = DEFAULT_PAGE_TEMPLATE
         if self.prepare_source_path():
             if self.prepare_target_path():
@@ -90,7 +92,8 @@ class Kiwi():
 
     def process_files(self):
         for source_file in self.source_files:
-            print source_file
+            if self.verbose:
+                print source_file
             self.apply_markup(source_file)
             self.apply_template(source_file)
             self.write_page(source_file)
@@ -130,7 +133,7 @@ class Kiwi():
         f.close()
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.2')
+    params = docopt(__doc__, version='Kiwi, version 0.0.3')
     print params
     
     api = Kiwi()
