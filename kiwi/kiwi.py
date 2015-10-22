@@ -7,7 +7,7 @@ Kiwi takes a folder of text files and exports them in another folder as
 web-pages.
 
 Usage:
-  kiwi [SOURCE] [-t target] [-v]
+  kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v]
   kiwi --version
 Arguments:
   SOURCE                     source folder
@@ -15,6 +15,7 @@ Options:
   -h --help                  show this help message and exit
   --version                  show version and exit
   -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
+  -m --template=TEMPLATE     html file to use as project template
   -v --verbose               displays processing details
 """
 
@@ -61,11 +62,22 @@ class Kiwi():
     def execute(self, params):
         self.params = params
         self.verbose = params["--verbose"]
-        self.template = DEFAULT_PAGE_TEMPLATE
+        self.prepare_template()
         if self.prepare_source_path():
             if self.prepare_target_path():
                 self.process_files()
         return True
+
+    def prepare_template(self):
+        self.template = DEFAULT_PAGE_TEMPLATE
+        if self.params["--template"] != None:
+            template_file = self.params["--template"]
+            if os.path.exists(template_file):
+                f = open(template_file)
+                self.template = f.read()
+                f.close
+            elif self.verbose:
+                print "Template file %s not found, using default instead." % template_file
 
     def prepare_source_path(self):
         if self.params["SOURCE"]:
@@ -86,7 +98,6 @@ class Kiwi():
         else:
             self.target_path = os.path.join(self.source_path, "html")
         if not os.path.exists(self.target_path):
-            # Create the path
             os.makedirs(self.target_path)
         return True
 
@@ -109,7 +120,7 @@ class Kiwi():
         template_lines = [re.sub("\n", "", line) for line in self.template.split("\n")]
         self.output = []
         for line in template_lines:
-            if line.strip() == "@@CONTENTS":
+            if line.strip().upper() == "@@CONTENTS":
                 self.output.extend(self.lines)
             else:
                 self.output.extend(line)
@@ -133,8 +144,8 @@ class Kiwi():
         f.close()
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.3')
-    print params
+    params = docopt(__doc__, version='Kiwi, version 0.0.4')
+    # print params
     
     api = Kiwi()
     api.execute(params)

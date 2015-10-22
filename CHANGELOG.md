@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 2015-10-22
+- Add 'template' command-line argument, to specify template html file
+
 ## [0.0.3] - 2015-10-20
 - Add 'verbose' command-line argument
 
