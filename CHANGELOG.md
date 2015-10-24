@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.5] - 2015-10-24
+- Add support for pre-processing files
+
 ## [0.0.4] - 2015-10-22
 - Add 'template' command-line argument, to specify template html file
 

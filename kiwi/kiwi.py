@@ -101,22 +101,30 @@ class Kiwi():
             os.makedirs(self.target_path)
         return True
 
+    def load_file(self, source_file):
+        f = open(source_file)
+        self.lines = f.readlines()
+        f.close()
+        
     def process_files(self):
         for source_file in self.source_files:
             if self.verbose:
                 print source_file
-            self.apply_markup(source_file)
-            self.apply_template(source_file)
+            self.load_file(source_file)
+            self.preprocess_file()
+            self.apply_markup()
+            self.apply_template()
             self.write_page(source_file)
 
-    def apply_markup(self, source_file):
-        f = open(source_file)
-        lines = f.readlines()
-        f.close()
-        self.marker.execute(lines, kiwimark.KIWI_MODE_STD)
-        self.lines = self.marker.output
+    def preprocess_file(self):
+        for line in self.lines:
+            pass
+        
+    def apply_markup(self):
+        self.marker.execute(self.lines, kiwimark.KIWI_MODE_STD)
+        self.output = self.marker.output
 
-    def apply_template(self, source_file):
+    def apply_template(self):
         template_lines = [re.sub("\n", "", line) for line in self.template.split("\n")]
         self.output = []
         for line in template_lines:
@@ -144,7 +152,7 @@ class Kiwi():
         f.close()
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.4')
+    params = docopt(__doc__, version='Kiwi, version 0.0.5')
     # print params
     
     api = Kiwi()
