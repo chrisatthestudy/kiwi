@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.6] - 2015-10-25
+- Implement basic pre- and post-processing of files
+
 ## [0.0.5] - 2015-10-24
 - Add support for pre-processing files
 
