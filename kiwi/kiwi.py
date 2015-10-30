@@ -6,6 +6,42 @@ Simple static web-site generator
 Kiwi takes a directory of text files and exports them to another directory as
 web-pages, using KiwiMarkup to convert the text markup into HTML elements.
 
+Alternatively it takes a single file and converts it to an HTML file.
+
+If SOURCE is a directory, all the .txt files in the directory are processed.
+If it is not a directory, it is assumed to be a text file and is processed.
+
+If SOURCE is not specified, any .txt files in the current working directory
+are processed.
+
+If TARGET is a directory, the HTML files are output to this directory.
+
+If TARGET is not specified, and SOURCE is a directory, an 'html' directory
+will be created (if it does not already exist) under the SOURCE directory,
+and the HTML files will be output to this directory.
+
+If TARGET is not specified, and SOURCE is a file, an HTML file with the same
+base name as the SOURCE file (but with an .html extension) will be output in
+the same directory as the SOURCE file.
+
+If the -m option is included, it should reference a file which contains the
+HTML template that will be wrapped around the content generated from the 
+SOURCE file or files. A @@CONTENTS marker must be included in this template,
+to indicate the point at which the converted output will be inserted.
+
+If no -m option is specified, Kiwi will use a simple default template.
+
+If the -v (verbose) option is specified, each file will be listed as it is
+processed.
+
+Post-Processing
+
+The final output is post-processed before it is written to file, and will
+replace meta-date entries found in either the template or the source:
+
+    @@TITLE - replaced with the directory name
+    @@DATE  - replaced with the current date
+
 Usage:
   kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v]
   kiwi --version
@@ -36,9 +72,16 @@ DEFAULT_PAGE_TEMPLATE = """
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@@TITLE</title>
-    <link rel="stylesheet" href="css/style.css" type="text/css" media="Screen">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style>
+      html {  padding: 10px 10px 200px;  }
+      body { margin: 0 auto;  max-width: 768px;  line-height: 1.6em; padding: 0.5em; }
+      p { font-size: 16px; }
+      th, td {  border: #ccc 1px solid; padding: 0.2em;  }
+    </style>
   </head>
   <body>
     <div id="page">
@@ -101,12 +144,17 @@ class Kiwi():
         found, otherwise returns True.
         """
         if self.params["SOURCE"]:
-            self.source_path = self.params["SOURCE"]
+            self.source_path = os.path.abspath(self.params["SOURCE"])
         else:
             self.source_path = os.getcwd()
         self.title = os.path.split(self.source_path)[1].title()
         if os.path.exists(self.source_path):
-            self.source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+            if os.path.isdir(self.source_path):
+                self.source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+            else:
+                filename, ext = os.path.splitext(self.title)
+                self.title = filename.title()
+                self.source_files = [self.source_path]
             return (len(self.source_files) > 0)
         else:
             print "Path not found: %s" % self.source_path
@@ -116,13 +164,17 @@ class Kiwi():
         """
         Prepares the path that the final HTML files will be written to. Uses
         the target path supplied in the command-line, if any, otherwise
-        defaults to an "html" directory under the source path. The directory
-        is created if it does not exist.
+        defaults to an "html" directory under the source path, unless the
+        source was a single file, in which case it defaults to the directory
+        of the source file. The directory is created if it does not exist.
         """
         if self.params["--target"]:
-            self.target_path = self.params["--target"]
+            self.target_path = os.path.abspath(self.params["--target"])
         else:
-            self.target_path = os.path.join(self.source_path, "html")
+            if os.path.isdir(self.source_path):
+                self.target_path = os.path.join(self.source_path, "html")
+            else:
+                self.target_path = os.path.dirname(os.path.abspath(self.source_path))
         if not os.path.exists(self.target_path):
             os.makedirs(self.target_path)
         return True
@@ -202,11 +254,11 @@ class Kiwi():
         target_file = os.path.join(self.target_path, filename + ".html")
 
         f = open(target_file, 'w')
-
+        f.write("\n".join(self.output))
         f.close()
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.6')
+    params = docopt(__doc__, version='Kiwi, version 0.0.7')
     # print params
     
     api = Kiwi()

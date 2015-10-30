@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.7] - 2015-10-30
+- Amend to accept single files for source and/or destination
+- Use Bootstrap as the default CSS
+
 ## [0.0.6] - 2015-10-25
 - Implement basic pre- and post-processing of files
 
