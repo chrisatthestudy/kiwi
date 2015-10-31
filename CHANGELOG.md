@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.0.8] - 2015-10-31
 - Add option to build a contents list (as index.html)
+- Add simple batch file for Windows
 
 ## [0.0.7] - 2015-10-30
 - Amend to accept single files for source and/or destination
