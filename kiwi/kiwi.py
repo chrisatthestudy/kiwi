@@ -34,6 +34,13 @@ If no -m option is specified, Kiwi will use a simple default template.
 If the -v (verbose) option is specified, each file will be listed as it is
 processed.
 
+If the -c (contents) option is specified, Kiwi will create an index.html
+file with a 'contents' list of links to all the other files.
+
+The --version option displays the version number and exits.
+
+The --help option displays the help and exits.
+
 Post-Processing
 
 The final output is post-processed before it is written to file, and will
@@ -43,7 +50,7 @@ replace meta-date entries found in either the template or the source:
     @@DATE  - replaced with the current date
 
 Usage:
-  kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v]
+  kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-vc]
   kiwi --version
 Arguments:
   SOURCE                     source folder
@@ -53,6 +60,7 @@ Options:
   -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
   -m --template=TEMPLATE     html file to use as template
   -v --verbose               displays processing details
+  -c --contents              generates a contents (index.html) page
 """
 
 # Standard library imports
@@ -183,11 +191,51 @@ class Kiwi():
         f = open(source_file)
         self.input = f.readlines()
         f.close()
+
+    def create_index(self):
+        """
+        Creates an index.html file containing a list of links to all the
+        other files.
+        """
+        # Build a list of all the pages.
+        page_list = []
+        self.input = []
+
+        # For each page, extract the first non-blank line and take this as the title
+        # for the page.
+        for source_file in self.source_files:
+            f = open(source_file)
+            title = ""
+            for line in f:
+                if line.strip() is not "":
+                    title = line.strip()
+                    link_file = os.path.basename(self.target_filename(source_file))
+                    page_list.append((link_file, title))
+                    break
+            f.close()
+
+        # Sort the list by title.
+        sorted_list = sorted(page_list, key = lambda entry: entry[1])
+
+        # Create a UL list, adding a LI tag with a link to the file for each
+        # item in the list of pages.
+        self.input.append("<h2>Contents</h2>")
+        self.input.append("<ul>")
+        for item in sorted_list:
+            self.input.append("<li><a href='%s'>%s</a></li>" % item)
+        self.input.append("</ul>")
+
+        self.apply_template()
+        self.postprocess_file()
+        self.write_page(os.path.join(self.target_path, "index.html"))
         
     def process_files(self):
         """
         Main processing routine.
         """
+        if self.params["--contents"]:
+            self.create_index()
+            
         for source_file in self.source_files:
             if self.verbose:
                 print source_file
@@ -244,6 +292,13 @@ class Kiwi():
         """
         Writes the final HTML page to the target folder.
         """
+        target_file = self.target_filename(source_file)
+        
+        f = open(target_file, 'w')
+        f.write("\n".join(self.output))
+        f.close()
+
+    def target_filename(self, source_file):
         # Extract the filename from the complete source path
         path, filename = os.path.split(source_file)
         
@@ -251,14 +306,10 @@ class Kiwi():
         filename, ext = os.path.splitext(filename)
 
         # Construct the full target path
-        target_file = os.path.join(self.target_path, filename + ".html")
-
-        f = open(target_file, 'w')
-        f.write("\n".join(self.output))
-        f.close()
+        return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.7')
+    params = docopt(__doc__, version='Kiwi, version 0.0.8')
     # print params
     
     api = Kiwi()

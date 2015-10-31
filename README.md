@@ -39,6 +39,9 @@ If no -m option is specified, Kiwi will use a simple default template.
 If the -v (verbose) option is specified, each file will be listed as it is
 processed.
 
+If the -c (contents) option is specified, Kiwi will create an index.html
+file with a 'contents' list of links to all the other files.
+
 The --version option displays the version number and exits.
 
 The --help option displays the help and exits.
