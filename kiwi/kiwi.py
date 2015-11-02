@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Kiwi
+
 Simple static web-site generator
 
 Kiwi takes a directory of text files and exports them to another directory as
@@ -44,10 +45,37 @@ The --help option displays the help and exits.
 Post-Processing
 
 The final output is post-processed before it is written to file, and will
-replace meta-date entries found in either the template or the source:
+replace meta-data entries found in either the template or the source:
 
     @@TITLE - replaced with the directory name
     @@DATE  - replaced with the current date
+
+In addition, user-defined meta-data tags can be included in either the
+template or the source files. There should be a declaration of the tag
+which specifies the tag name and the replacement text. Any occurrence of
+the tag name will be replace with the given text.
+
+E.g.:
+
+    @@CSS:style.css
+
+would declare a CSS tag with "style.css" as the replacement text. This tag
+declaration is deleted after it has been read.
+
+The contents will then replace any other occurrence of the tag name.
+
+E.g.:
+
+    <link rel=stylesheet href="@@CSS">
+
+would become:
+
+    <link rel=stylesheet href="style.css">
+
+The above example allows pages to specify the stylesheet individually. Note
+that the position of the tag declaration in the file is irrelevant -- tag
+references can appear earlier than the declaration, and they will still be
+replaced correctly.
 
 Usage:
   kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-vc]
@@ -258,11 +286,39 @@ class Kiwi():
         """
         Applies any meta-data elements to the current file.
         """
+        # Search for user-defined tag declarations
+        user_tags = []
+        pattern = re.compile('(@@[a-zA-Z0-9_-]+):(.*)', re.IGNORECASE)
         for i in range(0, len(self.output)):
+            match = re.search(pattern, self.output[i])
+            if match:
+                # Store the tag name and the replacement as a tuple
+                user_tags.append((match.group(1), match.group(2)))
+                # Remove the tag declaration
+                self.output[i] = re.sub(pattern, "", self.output[i])
+        
+        for i in range(0, len(self.output)):
+            # Handle the @@TITLE tag
             if re.search("@@TITLE", self.output[i]):
                 self.output[i] = re.sub("@@TITLE", self.title, self.output[i])
+
+            # Handle the @@DATE tag
             if re.search("@@DATE", self.output[i]):
                 self.output[i] = re.sub("@@DATE", datetime.datetime.now().strftime("%d %B %Y"), self.output[i])
+
+            # Find user-defined meta-data tag declarations, in the format:
+            #
+            #    <TAG>:<REPLACEMENT_CONTENTS>
+            #
+            # Remove the declaration tag, and replace all other occurrences
+            # of the tag with the replacement contents.
+            for match in user_tags:
+                target  = match[0]
+                replace = match[1].strip()
+                if re.search(target, self.output[i]):
+                    # Replace any occurrences of the tag
+                    self.output[i] = re.sub(target, replace, self.output[i])
+            
                       
     def apply_markup(self):
         """
@@ -309,7 +365,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.8')
+    params = docopt(__doc__, version='Kiwi, version 0.0.9')
     # print params
     
     api = Kiwi()

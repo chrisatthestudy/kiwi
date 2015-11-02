@@ -54,6 +54,33 @@ replace meta-date entries found in either the template or the source:
 * @@TITLE - replaced with the directory name
 * @@DATE  - replaced with the current date
 
+In addition, user-defined tags can be included in either the template or
+the source files. There should be a declaration of the tag which specifies
+the tag name and the replacement text. Any occurrence of the tag name will
+be replace with the given text.
+
+E.g.:
+
+    @@CSS:style.css
+
+would declare a CSS tag with "style.css" as the replacement text. This tag
+declaration is deleted after it has been read.
+
+The contents will then replace any other occurrence of the tag name.
+
+E.g.:
+
+    <link rel=stylesheet href="@@CSS">
+
+would become:
+
+    <link rel=stylesheet href="style.css">
+
+The above example allows pages to specify the stylesheet individually. Note
+that the position of the tag declaration in the file is irrelevant -- tag
+references can appear earlier than the declaration, and they will still be
+replaced correctly.
+
 ## Dependencies
 
 * Python 2.7+
