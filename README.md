@@ -9,7 +9,7 @@ Alternatively it takes a single file and converts it to an HTML file.
 
 ## Command-line Parameters
 
-    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v]
+    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v] [-c]
     kiwi --version
     kiwi [-h | --help]
 

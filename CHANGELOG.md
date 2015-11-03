@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.0.10] - 2015-11-03
 - Refactor the page list into a separate class
+- Update the README
 
 ## [0.0.9] - 2015-11-02
 - Add user-defined meta-tags
