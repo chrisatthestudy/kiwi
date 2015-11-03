@@ -131,6 +131,67 @@ DEFAULT_PAGE_TEMPLATE = """
 </html>
 """
 
+class KiwiPage():
+    """
+    Class to hold details of individual pages, including their source
+    and target filenames, and links for page navigation.
+    """
+    source_file = ""
+    target_file = ""
+    link = ""
+    title = ""
+
+class KiwiPageList():
+    """
+    Class to hold the list of KiwiPage instances used for building the
+    final output files.
+    """
+    files = []
+    target_path = ""
+
+    def add(self, source_file):
+        """
+        Adds the specified file to the list, retrieving its title,
+        and updating links between this file and any adjacent files
+        in the list.
+
+        The source_file argument is assumed to contain the full path
+        for the file.
+
+        The target_path attribute of this class must be set before
+        calling this function.
+        """
+        page = KiwiPage()
+        page.source_file = source_file
+        page.target_file = self.target_filename(source_file)
+
+        f = open(source_file)
+        title = ""
+        for line in f:
+            if line.strip() is not "":
+                page.title = line.strip()
+                page.link  = os.path.basename(page.target_file)
+                break
+        f.close()
+        
+        self.files.append(page)
+    
+    def target_filename(self, source_file):
+        # Extract the filename from the complete source path
+        path, filename = os.path.split(source_file)
+        
+        # Remove the extension from the filename
+        filename, ext = os.path.splitext(filename)
+
+        # Construct the full target path
+        return os.path.join(self.target_path, filename + ".html")
+
+    def sort(self):
+        """
+        Sorts the pages by their title.
+        """
+        self.files = sorted(self.files, key = lambda entry: entry.title)
+        
 class Kiwi():
 
     """
@@ -147,6 +208,8 @@ class Kiwi():
         """
         self.params = params
         self.verbose = params["--verbose"]
+        self.pages = KiwiPageList()
+        
         self.prepare_template()
         if self.prepare_source_path():
             if self.prepare_target_path():
@@ -186,12 +249,14 @@ class Kiwi():
         self.title = os.path.split(self.source_path)[1].title()
         if os.path.exists(self.source_path):
             if os.path.isdir(self.source_path):
-                self.source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+                source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+                for filespec in source_files:
+                    self.pages.add(filespec)
             else:
                 filename, ext = os.path.splitext(self.title)
                 self.title = filename.title()
-                self.source_files = [self.source_path]
-            return (len(self.source_files) > 0)
+                self.pages.add(self.source_path)
+            return (len(self.pages.files) > 0)
         else:
             print "Path not found: %s" % self.source_path
             return False
@@ -213,6 +278,7 @@ class Kiwi():
                 self.target_path = os.path.dirname(os.path.abspath(self.source_path))
         if not os.path.exists(self.target_path):
             os.makedirs(self.target_path)
+        self.pages.target_path = self.target_path
         return True
 
     def load_file(self, source_file):
@@ -223,34 +289,20 @@ class Kiwi():
     def create_index(self):
         """
         Creates an index.html file containing a list of links to all the
-        other files.
+        other files. This also builds the list of files that will be used
+        for any page-navigation tags.
         """
-        # Build a list of all the pages.
-        page_list = []
         self.input = []
 
-        # For each page, extract the first non-blank line and take this as the title
-        # for the page.
-        for source_file in self.source_files:
-            f = open(source_file)
-            title = ""
-            for line in f:
-                if line.strip() is not "":
-                    title = line.strip()
-                    link_file = os.path.basename(self.target_filename(source_file))
-                    page_list.append((link_file, title))
-                    break
-            f.close()
-
         # Sort the list by title.
-        sorted_list = sorted(page_list, key = lambda entry: entry[1])
+        self.pages.sort()
 
         # Create a UL list, adding a LI tag with a link to the file for each
         # item in the list of pages.
         self.input.append("<h2>Contents</h2>")
         self.input.append("<ul>")
-        for item in sorted_list:
-            self.input.append("<li><a href='%s'>%s</a></li>" % item)
+        for page in self.pages.files:
+            self.input.append("<li><a href='%s'>%s</a></li>" % (page.link, page.title))
         self.input.append("</ul>")
 
         self.apply_template()
@@ -264,15 +316,15 @@ class Kiwi():
         if self.params["--contents"]:
             self.create_index()
             
-        for source_file in self.source_files:
+        for page in self.pages.files:
             if self.verbose:
-                print source_file
-            self.load_file(source_file)
+                print page.source_file
+            self.load_file(page.source_file)
             self.preprocess_file()
             self.apply_markup()
             self.apply_template()
             self.postprocess_file()
-            self.write_page(source_file)
+            self.write_page(page.source_file)
 
     def preprocess_file(self):
         """
@@ -365,7 +417,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.9')
+    params = docopt(__doc__, version='Kiwi, version 0.0.10')
     # print params
     
     api = Kiwi()
