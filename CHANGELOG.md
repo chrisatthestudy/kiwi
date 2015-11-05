@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.11] - 2015-11-05
+- Add inline markup to table cell contents
+
 ## [0.0.10] - 2015-11-03
 - Refactor the page list into a separate class
 - Update the README
