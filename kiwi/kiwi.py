@@ -120,7 +120,13 @@ DEFAULT_PAGE_TEMPLATE = """
     </style>
   </head>
   <body>
+    <header>
+      <h1>@@TITLE</h1>
+    </header>
+
     <div id="page">
+
+@@PAGENAV
 
           <article>
 @@CONTENTS
@@ -191,7 +197,25 @@ class KiwiPageList():
         Sorts the pages by their title.
         """
         self.files = sorted(self.files, key = lambda entry: entry.title)
-        
+
+    def adjacent_files(self, source_file):
+        """
+        Returns (as a tuple) the KiwiPage instances for the file
+        immediately before and immediately after the given file.
+        This will always return a tuple of two elements, but one
+        or both of them can be nil.
+        """
+        preceding = None
+        following = None
+        for i in range(0, len(self.files)):
+            if self.files[i].source_file == source_file:
+                if i > 0:
+                    preceding = self.files[i - 1]
+                if i + 1 < len(self.files):
+                    following = self.files[i + 1]
+                break
+        return (preceding, following)
+    
 class Kiwi():
 
     """
@@ -306,7 +330,7 @@ class Kiwi():
         self.input.append("</ul>")
 
         self.apply_template()
-        self.postprocess_file()
+        self.postprocess_file(os.path.join(self.source_path, "index.txt"))
         self.write_page(os.path.join(self.target_path, "index.html"))
         
     def process_files(self):
@@ -323,7 +347,7 @@ class Kiwi():
             self.preprocess_file()
             self.apply_markup()
             self.apply_template()
-            self.postprocess_file()
+            self.postprocess_file(page.source_file)
             self.write_page(page.source_file)
 
     def preprocess_file(self):
@@ -334,7 +358,7 @@ class Kiwi():
         for line in self.input:
             pass
 
-    def postprocess_file(self):
+    def postprocess_file(self, source_file):
         """
         Applies any meta-data elements to the current file.
         """
@@ -358,6 +382,21 @@ class Kiwi():
             if re.search("@@DATE", self.output[i]):
                 self.output[i] = re.sub("@@DATE", datetime.datetime.now().strftime("%d %B %Y"), self.output[i])
 
+            # Handle the @@PAGENAV tag
+            if re.search("@@PAGENAV", self.output[i]):
+                navigation = ""
+                element = "<a class='page-nav page-%s' href='%s']>%s</a>"
+                
+                adjacent_files = self.pages.adjacent_files(source_file)
+                
+                if adjacent_files[0] is not None:
+                    navigation = navigation + element % ("back", adjacent_files[0].link, "< Back&nbsp;")
+                    
+                if adjacent_files[1] is not None:
+                    navigation = navigation + element % ("next", adjacent_files[1].link, "&nbsp;Next >")
+                    
+                self.output[i] = "<div class='page-nav'>%s</div>" % navigation
+                
             # Find user-defined meta-data tag declarations, in the format:
             #
             #    <TAG>:<REPLACEMENT_CONTENTS>
@@ -417,7 +456,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.11')
+    params = docopt(__doc__, version='Kiwi, version 0.0.12')
     # print params
     
     api = Kiwi()

@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.12] - 2015-11-10
+- Add basic page-navigation elements
+
 ## [0.0.11] - 2015-11-05
 - Add inline markup to table cell contents
 
