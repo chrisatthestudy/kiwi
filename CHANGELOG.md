@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.14] - 2015-11-11
+- Fix KiwiMarkup conflict between blocks and lists
+
 ## [0.0.13] - 2015-11-11
 - Fix page-navigation elements
 - Fix KiwiMarkup table detection
