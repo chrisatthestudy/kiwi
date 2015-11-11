@@ -126,7 +126,7 @@ DEFAULT_PAGE_TEMPLATE = """
 
     <div id="page">
 
-@@PAGENAV
+@@PAGE-NAV
 
           <article>
 @@CONTENTS
@@ -367,7 +367,10 @@ class Kiwi():
         pattern = re.compile('(@@[a-zA-Z0-9_-]+):(.*)', re.IGNORECASE)
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
-            if match:
+            # Ignore the PAGE-NAV tag -- this is handled separately
+            # TODO: Refactor this to remove this hack
+            if match and (match.group(1) != "@@PAGE-NAV"):
+                print match.group(1)
                 # Store the tag name and the replacement as a tuple
                 user_tags.append((match.group(1), match.group(2)))
                 # Remove the tag declaration
@@ -382,10 +385,10 @@ class Kiwi():
             if re.search("@@DATE", self.output[i]):
                 self.output[i] = re.sub("@@DATE", datetime.datetime.now().strftime("%d %B %Y"), self.output[i])
 
-            # Handle the @@PAGENAV tag
-            if re.search("@@PAGENAV", self.output[i]):
+            # Handle the @@PAGE-NAV tag
+            if re.search("@@PAGE-NAV", self.output[i]):
                 navigation = ""
-                element = "<a class='page-nav page-%s' href='%s']>%s</a>"
+                element = "<a class='page-nav page-%s' href='%s'>%s</a>"
                 
                 adjacent_files = self.pages.adjacent_files(source_file)
                 
@@ -409,7 +412,6 @@ class Kiwi():
                 if re.search(target, self.output[i]):
                     # Replace any occurrences of the tag
                     self.output[i] = re.sub(target, replace, self.output[i])
-            
                       
     def apply_markup(self):
         """
@@ -456,7 +458,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.12')
+    params = docopt(__doc__, version='Kiwi, version 0.0.13')
     # print params
     
     api = Kiwi()

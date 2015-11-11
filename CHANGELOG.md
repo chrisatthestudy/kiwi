@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.13] - 2015-11-11
+- Fix page-navigation elements
+- Fix KiwiMarkup table detection
+
 ## [0.0.12] - 2015-11-10
 - Add basic page-navigation elements
 
