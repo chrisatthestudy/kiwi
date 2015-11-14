@@ -38,6 +38,17 @@ processed.
 If the -c (contents) option is specified, Kiwi will create an index.html
 file with a 'contents' list of links to all the other files.
 
+If the -s (sort) option is specified, it should have an argument of either
+FILE or TITLE. If the argument is FILE, the pages are sorted into order by
+filename. If the argument is TITLE, the pages are sorted into order on the
+basis of the contents of their first non-blank line.
+
+This sort option only has any real effect if the -c (contents) option is
+specified, in which case it controls the order of the entries in the
+index.html page, or if a @@PAGE-NAV element is included in the template
+or the files, in which case it controls the order that the pages are
+navigated through.
+
 The --version option displays the version number and exits.
 
 The --help option displays the help and exits.
@@ -47,8 +58,9 @@ Post-Processing
 The final output is post-processed before it is written to file, and will
 replace meta-data entries found in either the template or the source:
 
-    @@TITLE - replaced with the directory name
-    @@DATE  - replaced with the current date
+@@TITLE - replaced with the directory name
+@@DATE  - replaced with the current date
+@@PAGE-NAV - replaced with 'back' and 'next' links between the pages
 
 In addition, user-defined meta-data tags can be included in either the
 template or the source files. There should be a declaration of the tag
@@ -57,7 +69,7 @@ the tag name will be replace with the given text.
 
 E.g.:
 
-    @@CSS:style.css
+@@CSS:style.css
 
 would declare a CSS tag with "style.css" as the replacement text. This tag
 declaration is deleted after it has been read.
@@ -66,11 +78,11 @@ The contents will then replace any other occurrence of the tag name.
 
 E.g.:
 
-    <link rel=stylesheet href="@@CSS">
+<link rel=stylesheet href="@@CSS">
 
 would become:
 
-    <link rel=stylesheet href="style.css">
+<link rel=stylesheet href="style.css">
 
 The above example allows pages to specify the stylesheet individually. Note
 that the position of the tag declaration in the file is irrelevant -- tag
@@ -78,17 +90,18 @@ references can appear earlier than the declaration, and they will still be
 replaced correctly.
 
 Usage:
-  kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-vc]
-  kiwi --version
+kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-s FILE|TITLE] [-vc]
+kiwi --version
 Arguments:
-  SOURCE                     source folder
+SOURCE                     source folder
 Options:
-  -h --help                  show this help message and exit
-  --version                  show version and exit
-  -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
-  -m --template=TEMPLATE     html file to use as template
-  -v --verbose               displays processing details
-  -c --contents              generates a contents (index.html) page
+-h --help                  show this help message and exit
+--version                  show version and exit
+-t TARGET --target=TARGET  target folder, defaults to SOURCE/html
+-m --template=TEMPLATE     html file to use as template
+-v --verbose               displays processing details
+-c --contents              generates a contents (index.html) page
+-s [FILE|TITLE] --sort=[FILE|TITLE] sort by filename or title (first line)
 """
 
 # Standard library imports
@@ -192,11 +205,17 @@ class KiwiPageList():
         # Construct the full target path
         return os.path.join(self.target_path, filename + ".html")
 
-    def sort(self):
+    def sort_by_title(self):
         """
         Sorts the pages by their title.
         """
         self.files = sorted(self.files, key = lambda entry: entry.title)
+
+    def sort_by_file(self):
+        """
+        Sorts the pages by their title.
+        """
+        self.files = sorted(self.files, key = lambda entry: entry.source_file)
 
     def adjacent_files(self, source_file):
         """
@@ -318,9 +337,6 @@ class Kiwi():
         """
         self.input = []
 
-        # Sort the list by title.
-        self.pages.sort()
-
         # Create a UL list, adding a LI tag with a link to the file for each
         # item in the list of pages.
         self.input.append("<h2>Contents</h2>")
@@ -337,6 +353,12 @@ class Kiwi():
         """
         Main processing routine.
         """
+        # Sort the pages.
+        if self.params["--sort"].upper() == "TITLE":
+            self.pages.sort_by_title()
+        elif self.params["--sort"].upper() == "FILE":
+            self.pages.sort_by_file()    
+
         if self.params["--contents"]:
             self.create_index()
             
@@ -370,7 +392,6 @@ class Kiwi():
             # Ignore the PAGE-NAV tag -- this is handled separately
             # TODO: Refactor this to remove this hack
             if match and (match.group(1) != "@@PAGE-NAV"):
-                print match.group(1)
                 # Store the tag name and the replacement as a tuple
                 user_tags.append((match.group(1), match.group(2)))
                 # Remove the tag declaration
@@ -458,7 +479,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.14')
+    params = docopt(__doc__, version='Kiwi, version 0.0.15')
     # print params
     
     api = Kiwi()

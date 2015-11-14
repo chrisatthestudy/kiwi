@@ -42,26 +42,38 @@ processed.
 If the -c (contents) option is specified, Kiwi will create an index.html
 file with a 'contents' list of links to all the other files.
 
+If the -s (sort) option is specified, it should have an argument of either
+FILE or TITLE. If the argument is FILE, the pages are sorted into order by
+filename. If the argument is TITLE, the pages are sorted into order on the
+basis of the contents of their first non-blank line.
+
+This sort option only has any real effect if the -c (contents) option is
+specified, in which case it controls the order of the entries in the
+index.html page, or if a @@PAGE-NAV element is included in the template
+or the files, in which case it controls the order that the pages are
+navigated through.
+
 The --version option displays the version number and exits.
 
 The --help option displays the help and exits.
 
-### Post-Processing
+Post-Processing
 
 The final output is post-processed before it is written to file, and will
-replace meta-date entries found in either the template or the source:
+replace meta-data entries found in either the template or the source:
 
-* @@TITLE - replaced with the directory name
-* @@DATE  - replaced with the current date
+@@TITLE - replaced with the directory name
+@@DATE  - replaced with the current date
+@@PAGE-NAV - replaced with 'back' and 'next' links between the pages
 
-In addition, user-defined tags can be included in either the template or
-the source files. There should be a declaration of the tag which specifies
-the tag name and the replacement text. Any occurrence of the tag name will
-be replace with the given text.
+In addition, user-defined meta-data tags can be included in either the
+template or the source files. There should be a declaration of the tag
+which specifies the tag name and the replacement text. Any occurrence of
+the tag name will be replace with the given text.
 
 E.g.:
 
-    @@CSS:style.css
+@@CSS:style.css
 
 would declare a CSS tag with "style.css" as the replacement text. This tag
 declaration is deleted after it has been read.
@@ -70,11 +82,11 @@ The contents will then replace any other occurrence of the tag name.
 
 E.g.:
 
-    <link rel=stylesheet href="@@CSS">
+<link rel=stylesheet href="@@CSS">
 
 would become:
 
-    <link rel=stylesheet href="style.css">
+<link rel=stylesheet href="style.css">
 
 The above example allows pages to specify the stylesheet individually. Note
 that the position of the tag declaration in the file is irrelevant -- tag
