@@ -12,6 +12,10 @@ Alternatively it takes a single file and converts it to an HTML file.
 If SOURCE is a directory, all the .txt files in the directory are processed.
 If it is not a directory, it is assumed to be a text file and is processed.
 
+If SOURCE is a single file with a .kiwi extension it is assumed to be a
+configuration file, and the details are read. Any other command-line details
+will override the details from this file.
+
 If SOURCE is not specified, any .txt files in the current working directory
 are processed.
 
@@ -38,15 +42,16 @@ processed.
 If the -c (contents) option is specified, Kiwi will create an index.html
 file with a 'contents' list of links to all the other files.
 
-If the -s (sort) option is specified, it should have an argument of either
-FILE or TITLE. If the argument is FILE, the pages are sorted into order by
-filename. If the argument is TITLE, the pages are sorted into order on the
-basis of the contents of their first non-blank line.
+If the --sortbyfile argument is used, the pages are sorted into order by
+filename.
 
-This sort option only has any real effect if the -c (contents) option is
-specified, in which case it controls the order of the entries in the
+If the --sortbytitle argument is used, the pages are sorted into order
+on the basis of the contents of their first non-blank line.
+
+These sort options only have any real effect if the -c (contents) option
+is specified, in which case they control the order of the entries in the
 index.html page, or if a @@PAGE-NAV element is included in the template
-or the files, in which case it controls the order that the pages are
+or the files, in which case they control the order that the pages are
 navigated through.
 
 The --version option displays the version number and exits.
@@ -90,18 +95,19 @@ references can appear earlier than the declaration, and they will still be
 replaced correctly.
 
 Usage:
-kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-s FILE|TITLE] [-vc]
-kiwi --version
+    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-vc]
+    kiwi --version
 Arguments:
-SOURCE                     source folder
+    SOURCE                     source folder
 Options:
--h --help                  show this help message and exit
---version                  show version and exit
--t TARGET --target=TARGET  target folder, defaults to SOURCE/html
--m --template=TEMPLATE     html file to use as template
--v --verbose               displays processing details
--c --contents              generates a contents (index.html) page
--s [FILE|TITLE] --sort=[FILE|TITLE] sort by filename or title (first line)
+    -h --help                  show this help message and exit
+    --version                  show version and exit
+    -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
+    -m --template=TEMPLATE     html file to use as template
+    -v --verbose               displays processing details
+    -c --contents              generates a contents (index.html) page
+    --sortbyfile               sort pages by filename
+    --sortbytitle              sort pages by title (first line)
 """
 
 # Standard library imports
@@ -354,9 +360,9 @@ class Kiwi():
         Main processing routine.
         """
         # Sort the pages.
-        if self.params["--sort"].upper() == "TITLE":
+        if self.params["--sortbytitle"]:
             self.pages.sort_by_title()
-        elif self.params["--sort"].upper() == "FILE":
+        elif self.params["--sortbyfile"]:
             self.pages.sort_by_file()    
 
         if self.params["--contents"]:
