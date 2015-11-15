@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.17] - 2015-11-15
+- Add option to save and load configuration file
+
 ## [0.0.16] - 2015-11-15
 - Fix command-line arguments for sort options
 

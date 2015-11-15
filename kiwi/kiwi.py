@@ -14,7 +14,7 @@ If it is not a directory, it is assumed to be a text file and is processed.
 
 If SOURCE is a single file with a .kiwi extension it is assumed to be a
 configuration file, and the details are read. Any other command-line details
-will override the details from this file.
+will be ignored.
 
 If SOURCE is not specified, any .txt files in the current working directory
 are processed.
@@ -95,7 +95,7 @@ references can appear earlier than the declaration, and they will still be
 replaced correctly.
 
 Usage:
-    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-vc]
+    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-f CONFIG] [-vc]
     kiwi --version
 Arguments:
     SOURCE                     source folder
@@ -108,6 +108,7 @@ Options:
     -c --contents              generates a contents (index.html) page
     --sortbyfile               sort pages by filename
     --sortbytitle              sort pages by title (first line)
+    -f CONFIG --savefile=CONFIG save parameters to config file (CONFIG.kiwi)
 """
 
 # Standard library imports
@@ -115,6 +116,7 @@ import os
 import glob
 import re
 import datetime
+import json
 
 # Third party imports
 from docopt import docopt
@@ -256,15 +258,38 @@ class Kiwi():
         params - docopt object containing command-line parameters
         """
         self.params = params
-        self.verbose = params["--verbose"]
+        self.open_kiwi_file()
+        self.verbose = self.params["--verbose"]
         self.pages = KiwiPageList()
         
         self.prepare_template()
         if self.prepare_source_path():
             if self.prepare_target_path():
                 self.process_files()
+
+        if self.params["--savefile"]:
+            f = open(os.path.join(self.source_path, self.params["--savefile"] + ".kiwi"), "w")
+            self.params["--savefile"] = None
+            f.write(json.dumps(self.params, indent=4, separators=(',', ':')))
+            f.close()
+                
         return True
 
+    def open_kiwi_file(self):
+        """
+        Checks to see if the command-line arguments specify a .kiwi file
+        and if so, opens it and replaces the current params array with
+        the contents of the file.
+        """
+        kiwi_file = self.params["SOURCE"]
+        if os.path.exists(kiwi_file):
+            filename, ext = os.path.splitext(kiwi_file)
+            if ext == ".kiwi":
+                f = open(kiwi_file)
+                self.params = json.loads(f.read())
+                f.close()
+                return True
+        
     def prepare_template(self):
         """
         Prepares the HTML template that the contents of each file will be
@@ -469,9 +494,20 @@ class Kiwi():
         Writes the final HTML page to the target folder.
         """
         target_file = self.target_filename(source_file)
-        
+
+        """
+        ### BUG: Temporary fix for a problem where occasional files would
+                 fail to be written, claiming to find an invalid character.
+                 Writing such files line-by-line instead seems to fix the
+                 problem. Needs further investigation!
+        """
         f = open(target_file, 'w')
-        f.write("\n".join(self.output))
+        try:
+            f.write("\n".join(self.output))
+        except Exception, e:
+            for line in self.output:
+                f.write(line + "\n")
+                
         f.close()
 
     def target_filename(self, source_file):
@@ -485,7 +521,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.15')
+    params = docopt(__doc__, version='Kiwi, version 0.0.17')
     # print params
     
     api = Kiwi()
