@@ -250,7 +250,7 @@ class Kiwi():
     """
     def __init__(self):
         self.marker = kiwimark.KiwiMarkup()
-        
+
     def execute(self, params):
         """
         Main entry point.
@@ -275,6 +275,24 @@ class Kiwi():
                 
         return True
 
+    def to_utf8(self, input):
+        """
+        Function to convert json input into utf-8 (json.load returns Unicode).
+        Without this, although self.params loads correctly, when the pages
+        are written (in self.write_page) they will sometimes error, for no
+        obvious reason.
+        
+        See stackoverflow.com/questions/956867/how-to-get-string-objects-instead-of-unicode-ones-from-json-in-python
+        """
+        if isinstance(input, dict):
+            return {self.to_utf8(key):self.to_utf8(value) for key,value in input.iteritems()}
+        elif isinstance(input, list):
+            return [self.to_utf8(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+
     def open_kiwi_file(self):
         """
         Checks to see if the command-line arguments specify a .kiwi file
@@ -288,6 +306,7 @@ class Kiwi():
                 f = open(kiwi_file)
                 self.params = json.loads(f.read())
                 f.close()
+                self.params = self.to_utf8(self.params)
                 return True
         
     def prepare_template(self):
@@ -500,10 +519,18 @@ class Kiwi():
                  fail to be written, claiming to find an invalid character.
                  Writing such files line-by-line instead seems to fix the
                  problem. Needs further investigation!
+                 
+                 UPDATE: This appears to be triggered by loading a .kiwi
+                 file, which json.loads() imports as Unicode. I don't know
+                 why this causes writing the pages to occasionally fail,
+                 but I've currently fixed it by converting the imported
+                 Unicode to utf-8 (see self.to_utf8).
         """
         f = open(target_file, 'w')
+
+        output = "\n".join(self.output)
         try:
-            f.write("\n".join(self.output))
+            f.write(output)
         except Exception, e:
             for line in self.output:
                 f.write(line + "\n")
@@ -521,7 +548,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.17')
+    params = docopt(__doc__, version='Kiwi, version 0.0.18')
     # print params
     
     api = Kiwi()

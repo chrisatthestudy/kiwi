@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.18] - 2015-11-16
+- Add to_utf8 function as temporary fix for write_page error
+
 ## [0.0.17] - 2015-11-15
 - Add option to save and load configuration file
 

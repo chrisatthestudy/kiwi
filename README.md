@@ -9,7 +9,7 @@ Alternatively it takes a single file and converts it to an HTML file.
 
 ## Command-line Parameters
 
-    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [-v] [-c]
+    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-f CONFIG] [-vc]
     kiwi --version
     kiwi [-h | --help]
 
@@ -46,16 +46,21 @@ processed.
 If the -c (contents) option is specified, Kiwi will create an index.html
 file with a 'contents' list of links to all the other files.
 
-If the -s (sort) option is specified, it should have an argument of either
-FILE or TITLE. If the argument is FILE, the pages are sorted into order by
-filename. If the argument is TITLE, the pages are sorted into order on the
-basis of the contents of their first non-blank line.
+If the --sortbyfile argument is used, the pages are sorted into order by
+filename.
 
-This sort option only has any real effect if the -c (contents) option is
-specified, in which case it controls the order of the entries in the
+If the --sortbytitle argument is used, the pages are sorted into order
+on the basis of the contents of their first non-blank line.
+
+These sort options only have any real effect if the -c (contents) option
+is specified, in which case they control the order of the entries in the
 index.html page, or if a @@PAGE-NAV element is included in the template
-or the files, in which case it controls the order that the pages are
+or the files, in which case they control the order that the pages are
 navigated through.
+
+The -f function writes the command-line arguments to a <CONFIG>.kiwi file,
+which can subsequently be specified instead of the SOURCE argument to run
+Kiwi using the same arguments.
 
 The --version option displays the version number and exits.
 
