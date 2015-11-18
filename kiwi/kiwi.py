@@ -234,17 +234,16 @@ class KiwiPageList():
         """
         preceding = None
         following = None
-        for i in range(0, len(self.files)):
-            if self.files[i].source_file == source_file:
-                if i > 0:
-                    preceding = self.files[i - 1]
-                if i + 1 < len(self.files):
-                    following = self.files[i + 1]
-                break
+        files = [idx for idx, entry in enumerate(self.files) if entry.source_file == source_file]
+        if len(files) > 0:
+            pos = files[0]
+            if pos > 0:
+                preceding = self.files[pos - 1]
+            if pos + 1 < len(self.files):
+                following = self.files[pos + 1]
         return (preceding, following)
     
 class Kiwi():
-
     """
     Main processor class, with Kiwi.execute() as the entry-point.
     """
@@ -267,6 +266,7 @@ class Kiwi():
             if self.prepare_target_path():
                 self.process_files()
 
+        # If requested, save the config file into the source path
         if self.params["--savefile"]:
             f = open(os.path.join(self.source_path, self.params["--savefile"] + ".kiwi"), "w")
             self.params["--savefile"] = None
@@ -274,6 +274,29 @@ class Kiwi():
             f.close()
                 
         return True
+
+    def process_files(self):
+        """
+        Main processing routine.
+        """
+        # Sort the pages.
+        if self.params["--sortbytitle"]:
+            self.pages.sort_by_title()
+        elif self.params["--sortbyfile"]:
+            self.pages.sort_by_file()    
+
+        if self.params["--contents"]:
+            self.create_index()
+            
+        for page in self.pages.files:
+            if self.verbose:
+                print page.source_file
+            self.load_file(page.source_file)
+            self.preprocess_file()
+            self.apply_markup()
+            self.apply_template()
+            self.postprocess_file(page.source_file)
+            self.write_page(page.source_file)
 
     def to_utf8(self, input):
         """
@@ -399,29 +422,6 @@ class Kiwi():
         self.postprocess_file(os.path.join(self.source_path, "index.txt"))
         self.write_page(os.path.join(self.target_path, "index.html"))
         
-    def process_files(self):
-        """
-        Main processing routine.
-        """
-        # Sort the pages.
-        if self.params["--sortbytitle"]:
-            self.pages.sort_by_title()
-        elif self.params["--sortbyfile"]:
-            self.pages.sort_by_file()    
-
-        if self.params["--contents"]:
-            self.create_index()
-            
-        for page in self.pages.files:
-            if self.verbose:
-                print page.source_file
-            self.load_file(page.source_file)
-            self.preprocess_file()
-            self.apply_markup()
-            self.apply_template()
-            self.postprocess_file(page.source_file)
-            self.write_page(page.source_file)
-
     def preprocess_file(self):
         """
         Extracts any meta-data from the current file. This will then be

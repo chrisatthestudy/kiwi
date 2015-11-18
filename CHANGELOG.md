@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.19] - 2015-11-18
+- Refactor adjacent_files function
+- Rearrange functions for clarity
+
 ## [0.0.18] - 2015-11-16
 - Add to_utf8 function as temporary fix for write_page error
 
