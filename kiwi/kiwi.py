@@ -323,7 +323,7 @@ class Kiwi():
         the contents of the file.
         """
         kiwi_file = self.params["SOURCE"]
-        if os.path.exists(kiwi_file):
+        if (kiwi_file is not None) and os.path.exists(kiwi_file):
             filename, ext = os.path.splitext(kiwi_file)
             if ext == ".kiwi":
                 f = open(kiwi_file)
@@ -548,7 +548,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.18')
+    params = docopt(__doc__, version='Kiwi, version 0.0.20')
     # print params
     
     api = Kiwi()

@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.20] - 2015-11-20
+- Fix issue when .kiwi file is not found
+
 ## [0.0.19] - 2015-11-18
 - Refactor adjacent_files function
 - Rearrange functions for clarity
