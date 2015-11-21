@@ -436,12 +436,12 @@ class Kiwi():
         """
         # Search for user-defined tag declarations
         user_tags = []
+        system_tags = ["@@PAGE-NAV", "@@TITLE", "@@DATE"]
         pattern = re.compile('(@@[a-zA-Z0-9_-]+):(.*)', re.IGNORECASE)
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
-            # Ignore the PAGE-NAV tag -- this is handled separately
-            # TODO: Refactor this to remove this hack
-            if match and (match.group(1) != "@@PAGE-NAV"):
+            # Ignore system-defined tags
+            if match and (match.group(1) not in system_tags):
                 # Store the tag name and the replacement as a tuple
                 user_tags.append((match.group(1), match.group(2)))
                 # Remove the tag declaration

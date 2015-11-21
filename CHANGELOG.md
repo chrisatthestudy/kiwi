@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.21] - 2015-11-21
+- Improve handling of system meta-tags
+
 ## [0.0.20] - 2015-11-20
 - Fix issue when .kiwi file is not found
 
