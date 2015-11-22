@@ -70,11 +70,12 @@ replace meta-data entries found in either the template or the source:
 In addition, user-defined meta-data tags can be included in either the
 template or the source files. There should be a declaration of the tag
 which specifies the tag name and the replacement text. Any occurrence of
-the tag name will be replace with the given text.
+the tag name will be replace with the given text. The replacement text
+must be enclosed in double-quotes.
 
 E.g.:
 
-@@CSS:style.css
+@@CSS:"style.css"
 
 would declare a CSS tag with "style.css" as the replacement text. This tag
 declaration is deleted after it has been read.
@@ -437,27 +438,38 @@ class Kiwi():
         # Search for user-defined tag declarations
         user_tags = []
         system_tags = ["@@PAGE-NAV", "@@TITLE", "@@DATE"]
-        pattern = re.compile('(@@[a-zA-Z0-9_-]+):(.*)', re.IGNORECASE)
+        pattern = re.compile('(@@[a-zA-Z0-9_-]+)(:("[^\s]*"))?', re.IGNORECASE)
+        date_format = "%D %B %Y"
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
             # Ignore system-defined tags
-            if match and (match.group(1) not in system_tags):
+            if match and (match.group(1) not in system_tags) and match.group(3):
                 # Store the tag name and the replacement as a tuple
-                user_tags.append((match.group(1), match.group(2)))
+                user_tags.append((match.group(1), match.group(3)))
                 # Remove the tag declaration
                 self.output[i] = re.sub(pattern, "", self.output[i])
         
         for i in range(0, len(self.output)):
             # Handle the @@TITLE tag
-            if re.search("@@TITLE", self.output[i]):
-                self.output[i] = re.sub("@@TITLE", self.title, self.output[i])
+            tag = ""
+            replacement = ""
+            match = re.search(pattern, self.output[i])
+            if match:
+                tag = match.group(1)
+                if match.group(3):
+                    replacement = re.sub('"', '', match.group(3))
+
+            if tag == "@@TITLE":
+                self.output[i] = re.sub(pattern, self.title, self.output[i])
 
             # Handle the @@DATE tag
-            if re.search("@@DATE", self.output[i]):
-                self.output[i] = re.sub("@@DATE", datetime.datetime.now().strftime("%d %B %Y"), self.output[i])
+            if tag == "@@DATE":
+                if replacement is not "":
+                    date_format = re.sub('"', '', match.group(3))
+                self.output[i] = re.sub(pattern, datetime.datetime.now().strftime(date_format), self.output[i])
 
             # Handle the @@PAGE-NAV tag
-            if re.search("@@PAGE-NAV", self.output[i]):
+            if tag  == "@@PAGE-NAV":
                 navigation = ""
                 element = "<a class='page-nav page-%s' href='%s'>%s</a>"
                 
@@ -548,7 +560,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.20')
+    params = docopt(__doc__, version='Kiwi, version 0.0.22')
     # print params
     
     api = Kiwi()
