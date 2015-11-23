@@ -437,53 +437,52 @@ class Kiwi():
         """
         # Search for user-defined tag declarations
         user_tags = []
-        system_tags = ["@@PAGE-NAV", "@@TITLE", "@@DATE"]
-        pattern = re.compile('(@@[a-zA-Z0-9_-]+)(:("[^\s]*"))?', re.IGNORECASE)
+        system_tags = ["@@PAGE-NAV", "@@DATE"]
+        pattern = re.compile('(@@[a-zA-Z0-9_-]+)(:("[^"]*"))?', re.IGNORECASE)
         date_format = "%D %B %Y"
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
-            # Ignore system-defined tags
-            if match and (match.group(1) not in system_tags) and match.group(3):
-                # Store the tag name and the replacement as a tuple
-                user_tags.append((match.group(1), match.group(3)))
-                # Remove the tag declaration
-                self.output[i] = re.sub(pattern, "", self.output[i])
-        
-        for i in range(0, len(self.output)):
-            # Handle the @@TITLE tag
-            tag = ""
-            replacement = ""
-            match = re.search(pattern, self.output[i])
             if match:
                 tag = match.group(1)
+                replacement = ""
+                
+                if tag == "@@PAGE-NAV":
+                    navigation = ""
+                    element = "<a class='page-nav page-%s' href='%s'>%s</a>"
+                    
+                    adjacent_files = self.pages.adjacent_files(source_file)
+                    
+                    if adjacent_files[0] is not None:
+                        navigation = navigation + element % ("back", adjacent_files[0].link, "< Back&nbsp;")
+                        
+                    if adjacent_files[1] is not None:
+                        navigation = navigation + element % ("next", adjacent_files[1].link, "&nbsp;Next >")
+                            
+                    replacement = "<div class='page-nav'>%s</div>" % navigation
+
                 if match.group(3):
                     replacement = re.sub('"', '', match.group(3))
 
-            if tag == "@@TITLE":
-                self.output[i] = re.sub(pattern, self.title, self.output[i])
+                    # Handle system-defined tags
+                    if tag == "@@TITLE":
+                        if replacement == "":
+                            replacement = self.title
+                    elif tag == "@@DATE":
+                        date_format = replacement
+                        replacement = datetime.datetime.now().strftime(date_format)
 
-            # Handle the @@DATE tag
-            if tag == "@@DATE":
+                # Store the tag name and the replacement as a tuple
                 if replacement is not "":
-                    date_format = re.sub('"', '', match.group(3))
-                self.output[i] = re.sub(pattern, datetime.datetime.now().strftime(date_format), self.output[i])
+                    user_tags.append((tag, replacement))
 
-            # Handle the @@PAGE-NAV tag
-            if tag  == "@@PAGE-NAV":
-                navigation = ""
-                element = "<a class='page-nav page-%s' href='%s'>%s</a>"
-                
-                adjacent_files = self.pages.adjacent_files(source_file)
-                
-                if adjacent_files[0] is not None:
-                    navigation = navigation + element % ("back", adjacent_files[0].link, "< Back&nbsp;")
-                    
-                if adjacent_files[1] is not None:
-                    navigation = navigation + element % ("next", adjacent_files[1].link, "&nbsp;Next >")
-                    
-                self.output[i] = "<div class='page-nav'>%s</div>" % navigation
-                
-            # Find user-defined meta-data tag declarations, in the format:
+                    # Remove the tag declaration
+                    if tag in system_tags:
+                        self.output[i] = re.sub(pattern, tag, self.output[i])                    
+                    else:
+                        self.output[i] = re.sub(pattern, "", self.output[i])
+                        
+        for i in range(0, len(self.output)):
+            # Find meta-data tag declarations, in the format:
             #
             #    <TAG>:<REPLACEMENT_CONTENTS>
             #
@@ -560,7 +559,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.22')
+    params = docopt(__doc__, version='Kiwi, version 0.0.23')
     # print params
     
     api = Kiwi()

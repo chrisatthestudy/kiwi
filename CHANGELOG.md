@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.23] - 2015-11-23
+- Refactor handling of meta-tags, for consistency
+
+## [0.0.22] - 2015-11-22
+- Extend handling of meta-tags to allow date formats
+
 ## [0.0.21] - 2015-11-21
 - Improve handling of system meta-tags
 
