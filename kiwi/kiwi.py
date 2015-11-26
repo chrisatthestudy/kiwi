@@ -439,7 +439,7 @@ class Kiwi():
         user_tags = []
         system_tags = ["@@PAGE-NAV", "@@DATE"]
         pattern = re.compile('(@@[a-zA-Z0-9_-]+)(:("[^"]*"))?', re.IGNORECASE)
-        date_format = "%D %B %Y"
+        date_format = "%d %B %Y"
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
             if match:
@@ -559,7 +559,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.23')
+    params = docopt(__doc__, version='Kiwi, version 0.0.24')
     # print params
     
     api = Kiwi()

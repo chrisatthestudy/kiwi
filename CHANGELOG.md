@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.24] - 2015-11-26
+- Improve Kiwimark detection of bold and emphasized markup
+- Fix default date format
+
 ## [0.0.23] - 2015-11-23
 - Refactor handling of meta-tags, for consistency
 
