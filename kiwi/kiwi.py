@@ -98,18 +98,18 @@ replaced correctly.
 Usage:
     kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-f CONFIG] [-vc]
     kiwi --version
-Arguments:
-    SOURCE                     source folder
-Options:
-    -h --help                  show this help message and exit
-    --version                  show version and exit
-    -t TARGET --target=TARGET  target folder, defaults to SOURCE/html
-    -m --template=TEMPLATE     html file to use as template
-    -v --verbose               displays processing details
-    -c --contents              generates a contents (index.html) page
-    --sortbyfile               sort pages by filename
-    --sortbytitle              sort pages by title (first line)
-    -f CONFIG --savefile=CONFIG save parameters to config file (CONFIG.kiwi)
+Arguments
+    SOURCE                      
+Options                       
+    -h --help                   
+    --version                   
+    -t TARGET --target=TARGET   
+    -m --template=TEMPLATE      
+    -v --verbose                
+    -c --contents               
+    --sortbyfile                
+    --sortbytitle               
+    -f CONFIG --savefile=CONFIG 
 """
 
 # Standard library imports
@@ -269,7 +269,7 @@ class Kiwi():
 
         # If requested, save the config file into the source path
         if self.params["--savefile"]:
-            f = open(os.path.join(self.source_path, self.params["--savefile"] + ".kiwi"), "w")
+            f = open(os.path.join(self.source_path, self.params["--savefile"][0] + ".kiwi"), "w")
             self.params["--savefile"] = None
             f.write(json.dumps(self.params, indent=4, separators=(',', ':')))
             f.close()
@@ -367,6 +367,7 @@ class Kiwi():
         if os.path.exists(self.source_path):
             if os.path.isdir(self.source_path):
                 source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+                source_files.extend(glob.glob(os.path.join(self.source_path, "*.md")))
                 for filespec in source_files:
                     self.pages.add(filespec)
             else:
@@ -480,7 +481,8 @@ class Kiwi():
                         self.output[i] = re.sub(pattern, tag, self.output[i])                    
                     else:
                         self.output[i] = re.sub(pattern, "", self.output[i])
-                        
+
+        found_title = False
         for i in range(0, len(self.output)):
             # Find meta-data tag declarations, in the format:
             #
@@ -491,10 +493,17 @@ class Kiwi():
             for match in user_tags:
                 target  = match[0]
                 replace = match[1].strip()
+                if (target == "@@TITLE"):
+                    found_title = True
                 if re.search(target, self.output[i]):
                     # Replace any occurrences of the tag
                     self.output[i] = re.sub(target, replace, self.output[i])
-                      
+            
+            if not found_title:
+                if re.search("@@TITLE", self.output[i]):
+                    # Replace any occurrences of the tag
+                    self.output[i] = re.sub("@@TITLE", self.title, self.output[i])
+                
     def apply_markup(self):
         """
         Uses a KiwiMarkup instance to process the current file and
@@ -559,7 +568,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.25')
+    params = docopt(__doc__, version='Kiwi, version 0.0.26')
     # print params
     
     api = Kiwi()
