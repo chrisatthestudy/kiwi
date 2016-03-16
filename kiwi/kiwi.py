@@ -568,8 +568,8 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.27')
-    print params
+    params = docopt(__doc__, version='Kiwi, version 0.0.28')
+    # print params
     
     api = Kiwi()
     api.execute(params)
