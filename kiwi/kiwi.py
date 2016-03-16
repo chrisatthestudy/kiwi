@@ -4,6 +4,21 @@
 
 Simple static web-site generator
 
+Usage:
+    kiwi [SOURCE] [--target TARGET] [--template TEMPLATE] [--sortbyfile|--sortbytitle] [--savefile CONFIG] [-vc]
+    kiwi --version
+                    
+Options:                      
+    -h --help                   
+    --version                   
+    -t TARGET --target=TARGET
+    -m TEMPLATE --template=TEMPLATE
+    -v --verbose                
+    -c --contents               
+    --sortbyfile                
+    --sortbytitle               
+    -f CONFIG --savefile=CONFIG
+
 Kiwi takes a directory of text files and exports them to another directory as
 web-pages, using KiwiMarkup to convert the text markup into HTML elements.
 
@@ -95,21 +110,6 @@ that the position of the tag declaration in the file is irrelevant -- tag
 references can appear earlier than the declaration, and they will still be
 replaced correctly.
 
-Usage:
-    kiwi [SOURCE] [-t TARGET] [-m TEMPLATE] [--sortbyfile|--sortbytitle] [-f CONFIG] [-vc]
-    kiwi --version
-Arguments
-    SOURCE                      
-Options                       
-    -h --help                   
-    --version                   
-    -t TARGET --target=TARGET   
-    -m --template=TEMPLATE      
-    -v --verbose                
-    -c --contents               
-    --sortbyfile                
-    --sortbytitle               
-    -f CONFIG --savefile=CONFIG 
 """
 
 # Standard library imports
@@ -568,8 +568,8 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.26')
-    # print params
+    params = docopt(__doc__, version='Kiwi, version 0.0.27')
+    print params
     
     api = Kiwi()
     api.execute(params)

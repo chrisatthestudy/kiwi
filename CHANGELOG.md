@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.27] - 2016-03-16
+- Add support for org-mode style URL links
+- Fix handling of command-line options
+
 ## [0.0.26] - 2016-02-24
 - Amend rules for determining default page title
 - Fix handling of command-line options
