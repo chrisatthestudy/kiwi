@@ -469,7 +469,8 @@ class Kiwi():
                         if replacement == "":
                             replacement = self.title
                     elif tag == "@@DATE":
-                        date_format = replacement
+                        if replacement == "":
+                            date_format = replacement
                         replacement = datetime.datetime.now().strftime(date_format)
 
                 # Store the tag name and the replacement as a tuple
@@ -568,7 +569,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.28')
+    params = docopt(__doc__, version='Kiwi, version 0.0.29')
     # print params
     
     api = Kiwi()

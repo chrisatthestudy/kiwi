@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.29] - 2016-04-21
+- Add Kiwimark support for audio elements
+
 ## [0.0.28] - 2016-03-16
 - Disable display of command-line options
 
