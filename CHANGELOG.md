@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.31] - 2016-08-14
+- Fix handling of SOURCE file-spec to allow wildcards
+
 ## [0.0.30] - 2016-06-24
 - Fix indentation of blocks in Kiwimark
 

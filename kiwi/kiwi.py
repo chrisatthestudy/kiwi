@@ -24,12 +24,13 @@ web-pages, using KiwiMarkup to convert the text markup into HTML elements.
 
 Alternatively it takes a single file and converts it to an HTML file.
 
-If SOURCE is a directory, all the .txt files in the directory are processed.
-If it is not a directory, it is assumed to be a text file and is processed.
-
 If SOURCE is a single file with a .kiwi extension it is assumed to be a
 configuration file, and the details are read. Any other command-line details
 will be ignored.
+
+If SOURCE is a directory, all the .txt and .md files in the directory are
+processed.  If it is not a directory, it is assumed to be a complete file spec
+(optionally including wild cards) and the files it identifies are processed.
 
 If SOURCE is not specified, any .txt files in the current working directory
 are processed.
@@ -364,20 +365,19 @@ class Kiwi():
         else:
             self.source_path = os.getcwd()
         self.title = os.path.split(self.source_path)[1].title()
-        if os.path.exists(self.source_path):
-            if os.path.isdir(self.source_path):
-                source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
-                source_files.extend(glob.glob(os.path.join(self.source_path, "*.md")))
-                for filespec in source_files:
-                    self.pages.add(filespec)
-            else:
-                filename, ext = os.path.splitext(self.title)
-                self.title = filename.title()
-                self.pages.add(self.source_path)
-            return (len(self.pages.files) > 0)
+        
+        if os.path.isdir(self.source_path):
+            source_files = glob.glob(os.path.join(self.source_path, "*.txt"))
+            source_files.extend(glob.glob(os.path.join(self.source_path, "*.md")))
         else:
-            print "Path not found: %s" % self.source_path
-            return False
+            filename, ext = os.path.splitext(self.title)
+            self.title = filename.title()
+            source_files = glob.glob(self.source_path)
+            
+        for filespec in source_files:
+            self.pages.add(filespec)
+        
+        return (len(self.pages.files) > 0)
 
     def prepare_target_path(self):
         """

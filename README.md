@@ -13,12 +13,13 @@ Alternatively it takes a single file and converts it to an HTML file.
     kiwi --version
     kiwi [-h | --help]
 
-If SOURCE is a directory, all the .txt files in the directory are processed.
-If it is not a directory, it is assumed to be a text file and is processed.
-
 If SOURCE is a single file with a .kiwi extension it is assumed to be a
 configuration file, and the details are read. Any other command-line details
 will be ignored.
+
+If SOURCE is a directory, all the .txt and .md files in the directory are
+processed.  If it is not a directory, it is assumed to be a complete file spec
+(optionally including wild cards) and the files it identifies are processed.
 
 If SOURCE is not specified, any .txt files in the current working directory
 are processed.
