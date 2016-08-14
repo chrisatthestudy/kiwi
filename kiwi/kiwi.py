@@ -435,12 +435,19 @@ class Kiwi():
     def postprocess_file(self, source_file):
         """
         Applies any meta-data elements to the current file.
+
+        TODO: This function is messy and unclear, and needs redesigning.
         """
         # Search for user-defined tag declarations
         user_tags = []
         system_tags = ["@@PAGE-NAV", "@@DATE"]
+        
+        # RegEx to split the tag into three parts. Only the first and third
+        # are used, and are the tag name and replacement text respectively
+        # (except for @@DATE tags, where the third part is the date format
+        # string).
         pattern = re.compile('(@@[a-zA-Z0-9_-]+)(:("[^"]*"))?', re.IGNORECASE)
-        date_format = "%d %B %Y"
+
         for i in range(0, len(self.output)):
             match = re.search(pattern, self.output[i])
             if match:
@@ -461,17 +468,23 @@ class Kiwi():
                             
                     replacement = "<div class='page-nav'>%s</div>" % navigation
 
-                if match.group(3):
+                elif tag == "@@DATE":
+                    if match.group(3):
+                        # We've been given a date format. Strip the double-quotes
+                        date_format = re.sub('"', '', match.group(3))
+                    else:
+                        # There's no date format, so use the default
+                        date_format = "%d %B %Y"
+                    replacement = datetime.datetime.now().strftime(date_format)
+                    
+                elif match.group(3):
+                    # Strip off the double-quotes
                     replacement = re.sub('"', '', match.group(3))
 
                     # Handle system-defined tags
                     if tag == "@@TITLE":
                         if replacement == "":
                             replacement = self.title
-                    elif tag == "@@DATE":
-                        if replacement == "":
-                            date_format = replacement
-                        replacement = datetime.datetime.now().strftime(date_format)
 
                 # Store the tag name and the replacement as a tuple
                 if replacement is not "":
@@ -569,7 +582,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.29')
+    params = docopt(__doc__, version='Kiwi, version 0.0.32')
     # print params
     
     api = Kiwi()
