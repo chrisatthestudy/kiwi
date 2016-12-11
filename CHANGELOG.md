@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.0.32] - 2016-12-11
+- Improve handling of org-mode files
+
 ## [0.0.32] - 2016-08-14
 - Fix handling of date tags with format strings
 

@@ -525,7 +525,7 @@ class Kiwi():
         expected to be in self.input, which will be replaced by
         the formatted lines.
         """
-        self.marker.execute(self.input, kiwimark.KIWI_MODE_STD)
+        self.marker.execute(self.input)
         self.input = self.marker.output
 
     def apply_template(self):
@@ -582,7 +582,7 @@ class Kiwi():
         return os.path.join(self.target_path, filename + ".html")
         
 if (__name__ == "__main__"):
-    params = docopt(__doc__, version='Kiwi, version 0.0.32')
+    params = docopt(__doc__, version='Kiwi, version 0.0.33')
     # print params
     
     api = Kiwi()
